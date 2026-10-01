@@ -12,20 +12,38 @@ def find_google_sidecar(
     image_path: Path,
 ) -> Path | None:
 
-    candidates = [
-        image_path.with_name(
-            image_path.name + GOOGLE_SIDECAR_SUFFIX
-        ),
+    parent = image_path.parent
+    image_name = image_path.name
 
-        # Also support older/alternate Takeout naming
-        image_path.with_name(
-            image_path.name + ".json"
+    candidates = [
+        parent / (
+            image_name
+            + ".supplemental-metadata.json"
+        ),
+        parent / (
+            image_name
+            + ".supplemental-metadata"
+        ),
+        parent / (
+            image_name
+            + ".json"
         ),
     ]
 
     for candidate in candidates:
         if candidate.exists():
             return candidate
+
+    # Fallback for unexpected Google naming variations
+    matches = list(
+        parent.glob(
+            image_name
+            + "*supplemental*"
+        )
+    )
+
+    if matches:
+        return matches[0]
 
     return None
 
